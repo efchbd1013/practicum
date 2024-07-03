@@ -4,6 +4,12 @@ const userModule = require('./userModule'); // ייבוא הפונקציות מ�
 // פונקציה ליצירת משתמש
 function createUser(req, res) {
   const { name, email, phone } = req.body;
+
+  // ולידציה של הקלט
+  if (!name || !email || !phone || email.includes(' ') || !email.includes('@')) {
+    return res.status(400).json({ message: 'Invalid user data' });
+  }
+
   const user = userModule.createUser(name, email, phone);
   res.status(201).json(user);
 }
