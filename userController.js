@@ -1,56 +1,57 @@
 // userController.js
+const userModule = require('./userModule'); // ייבוא הפונקציות מהממודול
 
-const express = require('express');
-const router = express.Router();
+// פונקציה ליצירת משתמש
+function createUser(req, res) {
+  const { name, email, phone } = req.body;
 
-// מערך זמני לשמירת המשתמשים
-let users = [];
-let nextId = 1;
+  // ולידציה של הקלט
+  if (!name || !email || !phone || email.includes(' ') || !email.includes('@')) {
+    return res.status(400).json({ message: 'Invalid user data' });
+  }
 
-// יצירת משתמש חדש
-router.post('/', (req, res) => {
-    const { name, email, phone } = req.body;
-    const user = { id: nextId++, name, email, phone };
-    users.push(user);
-    res.status(201).json(user);
-});
+  const user = userModule.createUser(name, email, phone);
+  res.status(201).json(user);
+}
 
-// עדכון משתמש קיים
-router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    const { name, email, phone } = req.body;
-    const user = users.find(u => u.id === parseInt(id));
-    if (!user) {
-        return res.status(404).send('User not found');
-    }
+// פונקציה לעדכון משתמש
+function updateUser(req, res) {
+  const { id } = req.params;
+  const { name, email, phone } = req.body;
+  const user = userModule.updateUser(Number(id), name, email, phone);
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+}
 
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (phone) user.phone = phone;
-    
-    res.json(user);
-});
+// פונקציה למחיקת משתמש
+function deleteUser(req, res) {
+  const { id } = req.params;
+  const user = userModule.deleteUser(Number(id));
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+}
 
-// מחיקת משתמש לפי ID
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    const index = users.findIndex(u => u.id === parseInt(id));
-    if (index === -1) {
-        return res.status(404).send('User not found');
-    }
+// פונקציה לקבלת משתמש לפי ID
+function getUserById(req, res) {
+  const { id } = req.params;
+  const user = userModule.getUserById(Number(id));
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+}
 
-    const user = users.splice(index, 1);
-    res.json(user[0]);
-});
-
-// קבלת משתמש לפי ID
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    const user = users.find(u => u.id === parseInt(id));
-    if (!user) {
-        return res.status(404).send('User not found');
-    }
-    res.json(user);
-});
-
-module.exports = router;
+// ייצוא הפונקציות לשימוש בקובץ הראוטר
+module.exports = {
+  createUser,
+  updateUser,
+  deleteUser,
+  getUserById
+};
