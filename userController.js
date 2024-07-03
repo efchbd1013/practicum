@@ -7,9 +7,19 @@ const router = express.Router();
 let users = [];
 let nextId = 1;
 
+// פונקציה לבדיקת תקינות מספר טלפון (בפורמט ישראלי)
+function isValidPhone(phone) {
+    const re = /^(\+972|0)([23489]|5[0248]|77)[1-9]\d{6}$/;
+    return re.test(phone);
+}
+
 // יצירת משתמש חדש
 router.post('/', (req, res) => {
     const { name, email, phone } = req.body;
+    if (!isValidPhone(phone)) {
+        return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+
     const user = { id: nextId++, name, email, phone };
     users.push(user);
     res.status(201).json(user);
